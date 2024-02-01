@@ -6,16 +6,17 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 	"unsafe"
 
-	"github.com/gen2brain/malgo"
 	"github.com/ABConnectIO/mediadevices/internal/logging"
 	"github.com/ABConnectIO/mediadevices/pkg/driver"
 	"github.com/ABConnectIO/mediadevices/pkg/io/audio"
 	"github.com/ABConnectIO/mediadevices/pkg/prop"
 	"github.com/ABConnectIO/mediadevices/pkg/wave"
+	"github.com/gen2brain/malgo"
 )
 
 const (
@@ -31,6 +32,8 @@ var hostEndian binary.ByteOrder
 var (
 	errUnsupportedFormat = errors.New("the provided audio format is not supported")
 )
+var Channel int
+var UMC1820Name string = "UMC1820 Multichannel"
 
 type microphone struct {
 	malgo.DeviceInfo
@@ -59,17 +62,35 @@ func Initialize() {
 
 	for _, device := range devices {
 		info, err := ctx.DeviceInfo(malgo.Capture, device.ID, malgo.Shared)
-		if err == nil {
-			priority := driver.PriorityNormal
-			if info.IsDefault > 0 {
-				priority = driver.PriorityHigh
+		if info.Name() == UMC1820Name {
+			// Create 10 devices for each input channel on the UMC1820
+			for i := 1; i < int(info.Formats[0].Channels); i++ {
+				if err == nil {
+					priority := driver.PriorityNormal
+					if info.IsDefault > 0 {
+						priority = driver.PriorityHigh
+					}
+					driver.GetManager().Register(newMicrophone(info), driver.Info{
+						Label:      fmt.Sprintf("UMC1820-channel%d", i),
+						DeviceType: driver.Microphone,
+						Priority:   priority,
+						Name:       fmt.Sprintf("UMC1820-channel%d", i),
+					})
+				}
 			}
-			driver.GetManager().Register(newMicrophone(info), driver.Info{
-				Label:      device.ID.String(),
-				DeviceType: driver.Microphone,
-				Priority:   priority,
-				Name:       info.Name(),
-			})
+		} else {
+			if err == nil {
+				priority := driver.PriorityNormal
+				if info.IsDefault > 0 {
+					priority = driver.PriorityHigh
+				}
+				driver.GetManager().Register(newMicrophone(info), driver.Info{
+					Label:      device.ID.String(),
+					DeviceType: driver.Microphone,
+					Priority:   priority,
+					Name:       info.Name(),
+				})
+			}
 		}
 	}
 
@@ -85,6 +106,10 @@ func Initialize() {
 }
 
 func newMicrophone(info malgo.DeviceInfo) *microphone {
+	if strings.Contains(info.Name(), "UMC") {
+		info.Formats[0].Format = malgo.FormatF32
+	}
+
 	return &microphone{
 		DeviceInfo: info,
 	}
@@ -117,7 +142,6 @@ func (m *microphone) AudioRecord(inputProp prop.Media) (audio.Reader, error) {
 
 	config.DeviceType = malgo.Capture
 	config.PerformanceProfile = malgo.LowLatency
-	config.Capture.Channels = uint32(inputProp.ChannelCount)
 	config.SampleRate = uint32(inputProp.SampleRate)
 	config.PeriodSizeInMilliseconds = uint32(inputProp.Latency.Milliseconds())
 	//FIX: Turn on the microphone with the current device id
@@ -130,11 +154,33 @@ func (m *microphone) AudioRecord(inputProp prop.Media) (audio.Reader, error) {
 		return nil, errUnsupportedFormat
 	}
 
+	sizeInBytes := uint32(malgo.SampleSizeInBytes(config.Capture.Format))
+	channelOfInterest := Channel
+	// Update to the true number of channel only for the instances which use a specific channel number
+	if channelOfInterest > 0 {
+		config.Capture.Channels = m.Formats[0].Channels
+	} else {
+		config.Capture.Channels = uint32(inputProp.ChannelCount)
+	}
+
+	samplesPerFrame := config.Capture.Channels * sizeInBytes
+
 	cancelCtx, cancel := context.WithCancel(context.Background())
 	onRecvChunk := func(_, chunk []byte, framecount uint32) {
+		var subSample []byte
+		if channelOfInterest > 0 {
+			for i := 0; i < int(framecount); i += 1 {
+				i_from := (channelOfInterest-1)*int(sizeInBytes) + i*int(samplesPerFrame)
+				i_to := i_from + int(sizeInBytes)
+				subSample = append(subSample, chunk[i_from:i_to]...)
+			}
+		} else {
+			subSample = chunk
+		}
+
 		select {
 		case <-cancelCtx.Done():
-		case m.chunkChan <- chunk:
+		case m.chunkChan <- subSample:
 		}
 	}
 	callbacks.Data = onRecvChunk
@@ -201,9 +247,14 @@ func (m *microphone) Properties() []prop.Media {
 		// FIXME: Currently support 48kHz only. We need to implement a resampler first.
 		// for sampleRate := m.MinSampleRate; sampleRate <= m.MaxSampleRate; sampleRate += sampleRateStep {
 		sampleRate := 48000
+		var channelCount int = 1
+		if format.Channels == 2 {
+			channelCount = 2
+
+		}
 		supportedProp := prop.Media{
 			Audio: prop.Audio{
-				ChannelCount: int(format.Channels),
+				ChannelCount: channelCount, //int(format.Channels),
 				SampleRate:   int(sampleRate),
 				IsBigEndian:  isBigEndian,
 				// miniaudio only supports interleaved at the moment
@@ -213,7 +264,6 @@ func (m *microphone) Properties() []prop.Media {
 			},
 		}
 
-		supportedFormat := true
 		switch malgo.FormatType(format.Format) {
 		case malgo.FormatF32:
 			supportedProp.SampleSize = 4
@@ -221,14 +271,8 @@ func (m *microphone) Properties() []prop.Media {
 		case malgo.FormatS16:
 			supportedProp.SampleSize = 2
 			supportedProp.IsFloat = false
-		default:
-			supportedFormat = false
 		}
 
-		if !supportedFormat {
-			logger.Warnf("format '%s' not supported", format.Format)
-			continue
-		}
 		supportedProps = append(supportedProps, supportedProp)
 		// }
 	}
