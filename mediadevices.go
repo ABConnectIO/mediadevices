@@ -164,6 +164,9 @@ func selectAudio(constraints MediaTrackConstraints, selector *CodecSelector) (Tr
 	typeFilter := driver.FilterAudioRecorder()
 
 	d, c, err := selectBestDriver(typeFilter, constraints)
+	fmt.Println("Selected best microphone")
+	fmt.Println(d.Info().Name)
+	fmt.Println(d.Info().Label)
 	if err != nil {
 		return nil, err
 	}
