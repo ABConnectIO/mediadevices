@@ -6,12 +6,12 @@ In this example, we'll be using x264 and opus as our video and audio codecs. The
 
 Installation steps:
 
-* [x264](https://github.com/pion/mediadevices#x264)
+* [x264](https://github.com/ABConnectIO/mediadevices#x264)
 
 ### Download vnc example
 
 ```
-git clone https://github.com/pion/mediadevices.git
+git clone https://github.com/ABConnectIO/mediadevices.git
 ```
 
 #### Compile vnc example

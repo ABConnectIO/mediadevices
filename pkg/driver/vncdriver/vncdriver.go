@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pion/mediadevices/pkg/driver/vncdriver/vnc"
+	"github.com/ABConnectIO/mediadevices/pkg/driver/vncdriver/vnc"
 
-	"github.com/pion/mediadevices/pkg/frame"
-	"github.com/pion/mediadevices/pkg/io/video"
-	"github.com/pion/mediadevices/pkg/prop"
+	"github.com/ABConnectIO/mediadevices/pkg/frame"
+	"github.com/ABConnectIO/mediadevices/pkg/io/video"
+	"github.com/ABConnectIO/mediadevices/pkg/prop"
 )
 
 type vncDevice struct {

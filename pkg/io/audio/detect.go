@@ -3,8 +3,8 @@ package audio
 import (
 	"time"
 
-	"github.com/pion/mediadevices/pkg/prop"
-	"github.com/pion/mediadevices/pkg/wave"
+	"github.com/ABConnectIO/mediadevices/pkg/prop"
+	"github.com/ABConnectIO/mediadevices/pkg/wave"
 )
 
 // DetectChanges will detect chunk and audio property changes. For audio property detection,

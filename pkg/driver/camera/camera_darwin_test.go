@@ -7,9 +7,9 @@ package camera
 import (
 	"testing"
 
-	"github.com/pion/mediadevices/pkg/avfoundation"
-	"github.com/pion/mediadevices/pkg/frame"
-	"github.com/pion/mediadevices/pkg/prop"
+	"github.com/ABConnectIO/mediadevices/pkg/avfoundation"
+	"github.com/ABConnectIO/mediadevices/pkg/frame"
+	"github.com/ABConnectIO/mediadevices/pkg/prop"
 )
 
 func TestCameraFrameFormatSupport(t *testing.T) {

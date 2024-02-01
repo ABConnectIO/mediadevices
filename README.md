@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://pion.ly/slack"><img src="https://img.shields.io/badge/join-us%20on%20slack-gray.svg?longCache=true&logo=slack&colorB=brightgreen" alt="Slack Widget"></a>
   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/pion/mediadevices/test.yaml">
-  <a href="https://pkg.go.dev/github.com/pion/mediadevices"><img src="https://pkg.go.dev/badge/github.com/pion/mediadevices.svg" alt="Go Reference"></a>
+  <a href="https://pkg.go.dev/github.com/ABConnectIO/mediadevices"><img src="https://pkg.go.dev/badge/github.com/ABConnectIO/mediadevices.svg" alt="Go Reference"></a>
   <a href="https://codecov.io/gh/pion/mediadevices"><img src="https://codecov.io/gh/pion/mediadevices/branch/master/graph/badge.svg" alt="Coverage Status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 </p>
@@ -18,7 +18,7 @@
 ### Install
 
 ```bash
-go get -u github.com/pion/mediadevices
+go get -u github.com/ABConnectIO/mediadevices
 ```
 
 ### Usage
@@ -32,14 +32,14 @@ import (
 	"image/jpeg"
 	"os"
 
-	"github.com/pion/mediadevices"
-	"github.com/pion/mediadevices/pkg/prop"
+	"github.com/ABConnectIO/mediadevices"
+	"github.com/ABConnectIO/mediadevices/pkg/prop"
 
 	// This is required to register camera adapter
-	_ "github.com/pion/mediadevices/pkg/driver/camera" 
+	_ "github.com/ABConnectIO/mediadevices/pkg/driver/camera" 
 	// Note: If you don't have a camera or your adapters are not supported,
 	//       you can always swap your adapters with our dummy adapters below.
-	// _ "github.com/pion/mediadevices/pkg/driver/videotest"
+	// _ "github.com/ABConnectIO/mediadevices/pkg/driver/videotest"
 )
 
 func main() {
@@ -90,7 +90,7 @@ By default, there's no media input registered. This decision was made to allow y
 ```go
 import (
 	...
-	_ "github.com/pion/mediadevices/pkg/driver/camera"
+	_ "github.com/ABConnectIO/mediadevices/pkg/driver/camera"
 )
 ```
 
@@ -101,9 +101,9 @@ In order to encode your video/audio, `mediadevices` needs to know what codecs th
 package main
 
 import (
-	"github.com/pion/mediadevices"
-	"github.com/pion/mediadevices/pkg/codec/x264"      // This is required to use H264 video encoder
-	_ "github.com/pion/mediadevices/pkg/driver/camera" // This is required to register camera adapter
+	"github.com/ABConnectIO/mediadevices"
+	"github.com/ABConnectIO/mediadevices/pkg/codec/x264"      // This is required to use H264 video encoder
+	_ "github.com/ABConnectIO/mediadevices/pkg/driver/camera" // This is required to register camera adapter
 )
 
 func main() {
@@ -132,7 +132,7 @@ Note: we do not provide recommendations on choosing one codec or another as it i
 ##### x264
 A free software library and application for encoding video streams into the H.264/MPEG-4 AVC compression format.
 
-* Package: [github.com/pion/mediadevices/pkg/codec/x264](https://pkg.go.dev/github.com/pion/mediadevices/pkg/codec/x264)
+* Package: [github.com/ABConnectIO/mediadevices/pkg/codec/x264](https://pkg.go.dev/github.com/ABConnectIO/mediadevices/pkg/codec/x264)
 * Installation:
   * Mac: `brew install x264`
   * Ubuntu: `apt install libx264-dev`
@@ -140,19 +140,19 @@ A free software library and application for encoding video streams into the H.26
 ##### mmal
 A framework to enable H264 hardware encoding for Raspberry Pi or boards that use VideoCore GPUs.
 
-* Package: [github.com/pion/mediadevices/pkg/codec/mmal](https://pkg.go.dev/github.com/pion/mediadevices/pkg/codec/mmal)
+* Package: [github.com/ABConnectIO/mediadevices/pkg/codec/mmal](https://pkg.go.dev/github.com/ABConnectIO/mediadevices/pkg/codec/mmal)
 * Installation: no installation needed, mmal should come built in Raspberry Pi devices
 
 ##### openh264
 A codec library which supports H.264 encoding and decoding. It is suitable for use in real time applications.
 
-* Package: [github.com/pion/mediadevices/pkg/codec/openh264](https://pkg.go.dev/github.com/pion/mediadevices/pkg/codec/openh264)
+* Package: [github.com/ABConnectIO/mediadevices/pkg/codec/openh264](https://pkg.go.dev/github.com/ABConnectIO/mediadevices/pkg/codec/openh264)
 * Installation: no installation needed, included as a static binary
 
 ##### vpx
 A free software video codec library from Google and the Alliance for Open Media that implements VP8/VP9 video coding formats.
 
-* Package: [github.com/pion/mediadevices/pkg/codec/vpx](https://pkg.go.dev/github.com/pion/mediadevices/pkg/codec/vpx)
+* Package: [github.com/ABConnectIO/mediadevices/pkg/codec/vpx](https://pkg.go.dev/github.com/ABConnectIO/mediadevices/pkg/codec/vpx)
 * Installation:
   * Mac: `brew install libvpx`
   * Ubuntu: `apt install libvpx-dev`
@@ -160,7 +160,7 @@ A free software video codec library from Google and the Alliance for Open Media 
 ##### vaapi
 An open source API that allows applications such as VLC media player or GStreamer to use hardware video acceleration capabilities (currently support VP8/VP9).
 
-* Package: [github.com/pion/mediadevices/pkg/codec/vaapi](https://pkg.go.dev/github.com/pion/mediadevices/pkg/codec/vaapi)
+* Package: [github.com/ABConnectIO/mediadevices/pkg/codec/vaapi](https://pkg.go.dev/github.com/ABConnectIO/mediadevices/pkg/codec/vaapi)
 * Installation:
   * Ubuntu: `apt install libva-dev`
 
@@ -170,7 +170,7 @@ An open source API that allows applications such as VLC media player or GStreame
 ##### opus
 A totally open, royalty-free, highly versatile audio codec.
 
-* Package: [github.com/pion/mediadevices/pkg/codec/opus](https://pkg.go.dev/github.com/pion/mediadevices/pkg/codec/opus)
+* Package: [github.com/ABConnectIO/mediadevices/pkg/codec/opus](https://pkg.go.dev/github.com/ABConnectIO/mediadevices/pkg/codec/opus)
 * Installation:
   * Mac: `brew install opus`
   * Ubuntu: `apt install libopus-dev`
@@ -190,10 +190,10 @@ The test was taken by capturing a camera stream, decoding the raw frames, encodi
 3. Find the best property that meets the criteria
 
 So, when `mediadevices` returns `failed to find the best driver that fits the constraints` error, one of the following conditions might have occured:
-* Driver was not imported as a side effect in your program, e.g. `import _ github.com/pion/mediadevices/pkg/driver/camera`
+* Driver was not imported as a side effect in your program, e.g. `import _ github.com/ABConnectIO/mediadevices/pkg/driver/camera`
 * Your constraint is too strict that there's no driver can fullfil your requirements. In this case, you can try to turn up the debug level by specifying the following environment variable: `export PION_LOG_DEBUG=all` to see what was too strict and tune that.
 * Your driver is not supported/implemented. In this case, you can either let us know (file an issue) and wait for the maintainers to implement it. Or, you can implement it yourself and register it through `RegisterDriverAdapter`
-* If trying to use `import _ github.com/pion/mediadevices/pkg/driver/screen` note that you will need to use `GetDisplayMedia` instead of `GetUserMedia` 
+* If trying to use `import _ github.com/ABConnectIO/mediadevices/pkg/driver/screen` note that you will need to use `GetDisplayMedia` instead of `GetUserMedia` 
 
 #### Failed to find vpx/x264/mmal/opus codecs
 Since `mediadevices` uses cgo to access video/audio codecs, it needs to find these libraries from the system. To accomplish this, [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) is used for library discovery.

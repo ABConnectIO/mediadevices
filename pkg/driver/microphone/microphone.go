@@ -11,11 +11,11 @@ import (
 	"unsafe"
 
 	"github.com/gen2brain/malgo"
-	"github.com/pion/mediadevices/internal/logging"
-	"github.com/pion/mediadevices/pkg/driver"
-	"github.com/pion/mediadevices/pkg/io/audio"
-	"github.com/pion/mediadevices/pkg/prop"
-	"github.com/pion/mediadevices/pkg/wave"
+	"github.com/ABConnectIO/mediadevices/internal/logging"
+	"github.com/ABConnectIO/mediadevices/pkg/driver"
+	"github.com/ABConnectIO/mediadevices/pkg/io/audio"
+	"github.com/ABConnectIO/mediadevices/pkg/prop"
+	"github.com/ABConnectIO/mediadevices/pkg/wave"
 )
 
 const (

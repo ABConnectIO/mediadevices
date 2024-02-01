@@ -4,9 +4,9 @@ import (
 	"image"
 	"testing"
 
-	"github.com/pion/mediadevices/pkg/io/audio"
-	"github.com/pion/mediadevices/pkg/io/video"
-	"github.com/pion/mediadevices/pkg/wave"
+	"github.com/ABConnectIO/mediadevices/pkg/io/audio"
+	"github.com/ABConnectIO/mediadevices/pkg/io/video"
+	"github.com/ABConnectIO/mediadevices/pkg/wave"
 )
 
 func TestDetectCurrentVideoProp(t *testing.T) {

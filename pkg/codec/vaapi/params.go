@@ -1,9 +1,9 @@
 package vaapi
 
 import (
-	"github.com/pion/mediadevices/pkg/codec"
-	"github.com/pion/mediadevices/pkg/io/video"
-	"github.com/pion/mediadevices/pkg/prop"
+	"github.com/ABConnectIO/mediadevices/pkg/codec"
+	"github.com/ABConnectIO/mediadevices/pkg/io/video"
+	"github.com/ABConnectIO/mediadevices/pkg/prop"
 )
 
 // ParamsVP8 stores VP8 encoding parameters.

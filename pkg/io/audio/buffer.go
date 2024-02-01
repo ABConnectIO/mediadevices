@@ -3,7 +3,7 @@ package audio
 import (
 	"errors"
 
-	"github.com/pion/mediadevices/pkg/wave"
+	"github.com/ABConnectIO/mediadevices/pkg/wave"
 )
 
 var errUnsupported = errors.New("unsupported audio format")

@@ -1,7 +1,7 @@
 package mediadevices
 
 import (
-	"github.com/pion/mediadevices/internal/logging"
+	"github.com/ABConnectIO/mediadevices/internal/logging"
 )
 
 var logger = logging.NewLogger("mediadevices")

@@ -21,6 +21,6 @@
   ],
   "ignorePaths": [],
   "ignoreDeps": [
-    "github.com/pion/mediadevices"
+    "github.com/ABConnectIO/mediadevices"
   ]
 }
