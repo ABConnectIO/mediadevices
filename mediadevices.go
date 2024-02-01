@@ -216,6 +216,7 @@ func EnumerateDevices() []MediaDeviceInfo {
 			Kind:       kind,
 			Label:      driverInfo.Label,
 			DeviceType: driverInfo.DeviceType,
+			Name: driverInfo.Name,
 		})
 	}
 	return info
