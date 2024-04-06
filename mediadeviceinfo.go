@@ -15,8 +15,8 @@ const (
 func (m MediaDeviceType) String() string {
 	names := [...]string{
 		"Video Input",
-		"Audio Output",
 		"Audio Input",
+		"Audio Output",
 	}
 
 	// Check if the enum value is within bounds of the array
