@@ -12,6 +12,22 @@ const (
 	AudioOutput
 )
 
+func (m MediaDeviceType) String() string {
+	names := [...]string{
+		"Video Input",
+		"Audio Output",
+		"Audio Input",
+	}
+
+	// Check if the enum value is within bounds of the array
+	if m < VideoInput || m > AudioOutput {
+		return "Unknown"
+	}
+
+	// Return the string representation of the enum value
+	return names[m-1]
+}
+
 // MediaDeviceInfo represents https://w3c.github.io/mediacapture-main/#dom-mediadeviceinfo
 type MediaDeviceInfo struct {
 	DeviceID   string
