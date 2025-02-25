@@ -32,13 +32,16 @@ var hostEndian binary.ByteOrder
 var (
 	errUnsupportedFormat = errors.New("the provided audio format is not supported")
 )
-var Channel int
+
+// var Channel int
 var UMC1820Name string = "UMC1820 Multichannel"
 
 type microphone struct {
 	malgo.DeviceInfo
 	chunkChan       chan []byte
 	deviceCloseFunc func()
+	// The channel number of interest, if relevant. 0 otherwise. This is used to filter the audio samples for devices that contain multiple microphones.
+	channelOfInterest int
 }
 
 func init() {
@@ -70,7 +73,7 @@ func Initialize() {
 					if info.IsDefault > 0 {
 						priority = driver.PriorityHigh
 					}
-					driver.GetManager().Register(newMicrophone(info), driver.Info{
+					driver.GetManager().Register(newMicrophoneForChannel(info, i), driver.Info{
 						Label:      fmt.Sprintf("UMC1820-channel%d", i),
 						DeviceType: driver.Microphone,
 						Priority:   priority,
@@ -105,14 +108,19 @@ func Initialize() {
 	}
 }
 
-func newMicrophone(info malgo.DeviceInfo) *microphone {
+func newMicrophoneForChannel(info malgo.DeviceInfo, channel int) *microphone {
 	if strings.Contains(info.Name(), "UMC") {
 		info.Formats[0].Format = malgo.FormatF32
 	}
 
 	return &microphone{
-		DeviceInfo: info,
+		DeviceInfo:        info,
+		channelOfInterest: channel,
 	}
+}
+
+func newMicrophone(info malgo.DeviceInfo) *microphone {
+	return newMicrophoneForChannel(info, 0)
 }
 
 func (m *microphone) Open() error {
@@ -154,23 +162,25 @@ func (m *microphone) AudioRecord(inputProp prop.Media) (audio.Reader, error) {
 		return nil, errUnsupportedFormat
 	}
 
+	// Size of sample for one channel for input data format.
 	sizeInBytes := uint32(malgo.SampleSizeInBytes(config.Capture.Format))
-	channelOfInterest := Channel
+	// channelOfInterest := Channel
 	// Update to the true number of channel only for the instances which use a specific channel number
-	if channelOfInterest > 0 {
+	if m.channelOfInterest > 0 {
 		config.Capture.Channels = m.Formats[0].Channels
 	} else {
 		config.Capture.Channels = uint32(inputProp.ChannelCount)
 	}
 
+	// Frame sample size for all channels.
 	samplesPerFrame := config.Capture.Channels * sizeInBytes
 
 	cancelCtx, cancel := context.WithCancel(context.Background())
 	onRecvChunk := func(_, chunk []byte, framecount uint32) {
 		var subSample []byte
-		if channelOfInterest > 0 {
+		if m.channelOfInterest > 0 {
 			for i := 0; i < int(framecount); i += 1 {
-				i_from := (channelOfInterest-1)*int(sizeInBytes) + i*int(samplesPerFrame)
+				i_from := (m.channelOfInterest-1)*int(sizeInBytes) + i*int(samplesPerFrame)
 				i_to := i_from + int(sizeInBytes)
 				subSample = append(subSample, chunk[i_from:i_to]...)
 			}
