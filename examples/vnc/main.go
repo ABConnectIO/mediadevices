@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/ABConnectIO/mediadevices/pkg/driver"
 	"github.com/ABConnectIO/mediadevices/pkg/driver/vncdriver"
 
 	"github.com/ABConnectIO/mediadevices"
 	"github.com/ABConnectIO/mediadevices/examples/internal/signal"
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v4"
 
 	// If you don't like x264, you can also use vpx by importing as below
 	// "github.com/ABConnectIO/mediadevices/pkg/codec/vpx" // This is required to use VP8/VP9 video encoder
@@ -16,7 +17,6 @@ import (
 	// or if you use a raspberry pi like, you can use mmal for using its hardware encoder
 	// "github.com/ABConnectIO/mediadevices/pkg/codec/mmal"
 	"github.com/ABConnectIO/mediadevices/pkg/codec/x264" // This is required to use h264 video encoder
-
 	// Note: If you don't have a camera or microphone or your adapters are not supported,
 	//       you can always swap your adapters with our dummy adapters below.
 	// _ "github.com/ABConnectIO/mediadevices/pkg/driver/videotest"
@@ -84,7 +84,7 @@ func main() {
 		})
 
 		_, err = peerConnection.AddTransceiverFromTrack(track,
-			webrtc.RtpTransceiverInit{
+			webrtc.RTPTransceiverInit{
 				Direction: webrtc.RTPTransceiverDirectionSendonly,
 			},
 		)

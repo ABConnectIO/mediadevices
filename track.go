@@ -18,7 +18,7 @@ import (
 	"github.com/ABConnectIO/mediadevices/pkg/io/video"
 	"github.com/ABConnectIO/mediadevices/pkg/wave"
 	"github.com/pion/rtp"
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v4"
 )
 
 const (
