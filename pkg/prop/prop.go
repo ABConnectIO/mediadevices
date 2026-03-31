@@ -32,7 +32,7 @@ func (m *Media) String() string {
 	return prettifyStruct(m)
 }
 
-func prettifyStruct(i interface{}) string {
+func prettifyStruct(i any) string {
 	var rows []string
 	var addRows func(int, reflect.Value)
 	addRows = func(level int, obj reflect.Value) {
@@ -67,7 +67,7 @@ type setterFn func(fieldA, fieldB reflect.Value)
 
 // merge merges all the field values from o to p, except zero values. It's guaranteed that setterFn will be called
 // when fieldA and fieldB are not struct.
-func (p *Media) merge(o interface{}, set setterFn) {
+func (p *Media) merge(o any, set setterFn) {
 	rp := reflect.ValueOf(p).Elem()
 	ro := reflect.ValueOf(o)
 
@@ -86,10 +86,8 @@ func (p *Media) merge(o interface{}, set setterFn) {
 				continue
 			}
 
-			// TODO: Replace this with fieldB.IsZero() when we move to go1.13
 			// If non-boolean or non-discrete values are zeroes we skip them
-			if fieldB.Interface() == reflect.Zero(fieldB.Type()).Interface() &&
-				fieldB.Kind() != reflect.Bool {
+			if fieldB.IsZero() && fieldB.Kind() != reflect.Bool {
 				continue
 			}
 
@@ -159,13 +157,13 @@ func (p *MediaConstraints) FitnessDistance(o Media) (float64, bool) {
 }
 
 type comparisons []struct {
-	desired, actual interface{}
+	desired, actual any
 }
 
-func (c *comparisons) add(desired, actual interface{}) {
+func (c *comparisons) add(desired, actual any) {
 	if desired != nil {
 		*c = append(*c,
-			struct{ desired, actual interface{} }{
+			struct{ desired, actual any }{
 				desired, actual,
 			},
 		)

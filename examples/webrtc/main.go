@@ -3,19 +3,11 @@ package main
 import (
 	"fmt"
 
-<<<<<<< HEAD
 	"github.com/ABConnectIO/mediadevices"
 	"github.com/ABConnectIO/mediadevices/examples/internal/signal"
 	"github.com/ABConnectIO/mediadevices/pkg/frame"
 	"github.com/ABConnectIO/mediadevices/pkg/prop"
-	"github.com/pion/webrtc/v3"
-=======
-	"github.com/pion/mediadevices"
-	"github.com/pion/mediadevices/examples/internal/signal"
-	"github.com/pion/mediadevices/pkg/frame"
-	"github.com/pion/mediadevices/pkg/prop"
 	"github.com/pion/webrtc/v4"
->>>>>>> upstream/master
 
 	// If you don't like x264, you can also use vpx by importing as below
 	// "github.com/ABConnectIO/mediadevices/pkg/codec/vpx" // This is required to use VP8/VP9 video encoder

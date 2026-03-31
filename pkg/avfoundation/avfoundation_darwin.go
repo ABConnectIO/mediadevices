@@ -3,8 +3,7 @@ package avfoundation
 
 // #cgo CFLAGS: -x objective-c
 // #cgo LDFLAGS: -framework AVFoundation -framework Foundation -framework CoreMedia -framework CoreVideo
-// #include "AVFoundationBind/AVFoundationBind.h"
-// #include "AVFoundationBind/AVFoundationBind.m"
+// #include "AVFoundationBind.h"
 // extern void onData(void*, void*, int);
 // void onDataBridge(void *userData, void *buf, int len) {
 // 	onData(userData, buf, len);
@@ -136,11 +135,26 @@ func (rc *ReadCloser) dataCb(data []byte) {
 //   - For video, each call will return a frame.
 //   - For audio, each call will return a chunk which its size configured by Latency
 func (rc *ReadCloser) Read() ([]byte, func(), error) {
-	data, ok := <-rc.dataChan
-	if !ok {
-		return nil, func() {}, io.EOF
+	data, release, err := rc.ReadContext(context.Background())
+	if err != nil {
+		return nil, release, err
 	}
-	return data, func() {}, nil
+	return data, release, nil
+}
+
+// ReadContext is Read but with a context for better error handling e.g. timeout, cancellation, etc.
+func (rc *ReadCloser) ReadContext(ctx context.Context) ([]byte, func(), error) {
+	release := func() {} // no-op to satisfy Reader interface
+
+	select {
+	case <-ctx.Done():
+		return nil, release, ctx.Err()
+	case data, ok := <-rc.dataChan:
+		if !ok {
+			return nil, release, io.EOF
+		}
+		return data, release, nil
+	}
 }
 
 // Close closes the capturing session, and no data will flow anymore

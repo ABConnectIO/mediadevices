@@ -54,6 +54,7 @@ import (
 	"fmt"
 	"image"
 	"io"
+	"math"
 	"sync"
 	"time"
 	"unsafe"
@@ -74,11 +75,18 @@ type encoder struct {
 	frame           []byte
 	deadline        int
 	requireKeyFrame bool
+	targetBitrate   int
 	isKeyFrame      bool
 
 	mu     sync.Mutex
 	closed bool
 }
+
+const (
+	kRateControlThreshold = 0.15
+	kMinQuantizer         = 20
+	kMaxQuantizer         = 63
+)
 
 // VP8Params is codec specific paramaters
 type VP8Params struct {
@@ -200,14 +208,15 @@ func newEncoder(r video.Reader, p prop.Media, params Params, codecIface *C.vpx_c
 	}
 	t0 := time.Now()
 	return &encoder{
-		r:          video.ToI420(r),
-		codec:      codec,
-		raw:        rawNoBuffer,
-		cfg:        cfg,
-		tStart:     t0,
-		tLastFrame: t0,
-		deadline:   int(params.Deadline / time.Microsecond),
-		frame:      make([]byte, 1024),
+		r:             video.ToI420(r),
+		codec:         codec,
+		raw:           rawNoBuffer,
+		cfg:           cfg,
+		tStart:        t0,
+		tLastFrame:    t0,
+		deadline:      int(params.Deadline / time.Microsecond),
+		frame:         make([]byte, 1024),
+		targetBitrate: params.BitRate,
 	}, nil
 }
 
@@ -252,6 +261,10 @@ func (e *encoder) Read() ([]byte, func(), error) {
 		e.raw.d_w, e.raw.d_h = C.uint(width), C.uint(height)
 	}
 
+	if ec := C.vpx_codec_enc_config_set(e.codec, e.cfg); ec != 0 {
+		return nil, func() {}, fmt.Errorf("vpx_codec_enc_config_set failed (%d)", ec)
+	}
+
 	duration := t.Sub(e.tLastFrame).Microseconds()
 	// VPX doesn't allow 0 duration. If 0 is given, vpx_codec_encode will fail with VPX_CODEC_INVALID_PARAM.
 	// 0 duration is possible because mediadevices first gets the frame meta data by reading from the source,
@@ -261,6 +274,16 @@ func (e *encoder) Read() ([]byte, func(), error) {
 	if duration == 0 {
 		duration = 1
 	}
+
+	targetVpxBitrate := C.uint(float32(e.targetBitrate / 1000)) // convert to kilobits / second
+	if e.cfg.rc_target_bitrate != targetVpxBitrate && targetVpxBitrate >= 1 {
+		e.cfg.rc_target_bitrate = targetVpxBitrate
+		rc := C.vpx_codec_enc_config_set(e.codec, e.cfg)
+		if rc != C.VPX_CODEC_OK {
+			return nil, func() {}, fmt.Errorf("vpx_codec_enc_config_set failed (%d)", rc)
+		}
+	}
+
 	var flags int
 	if e.requireKeyFrame {
 		flags = flags | C.VPX_EFLAG_FORCE_KF
@@ -300,6 +323,31 @@ func (e *encoder) ForceKeyFrame() error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	e.requireKeyFrame = true
+	return nil
+}
+
+func (e *encoder) SetBitRate(bitrate int) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.targetBitrate = bitrate
+	return nil
+}
+
+func (e *encoder) DynamicQPControl(currentBitrate int, targetBitrate int) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	bitrateDiff := math.Abs(float64(currentBitrate - targetBitrate))
+	if bitrateDiff <= float64(currentBitrate)*kRateControlThreshold {
+		return nil
+	}
+	currentMax := e.cfg.rc_max_quantizer
+
+	if targetBitrate < currentBitrate {
+		e.cfg.rc_max_quantizer = min(currentMax+1, kMaxQuantizer)
+	} else {
+		e.cfg.rc_max_quantizer = max(currentMax-1, kMinQuantizer)
+	}
+	e.cfg.rc_min_quantizer = e.cfg.rc_max_quantizer
 	return nil
 }
 

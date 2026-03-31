@@ -2,8 +2,10 @@ package mediadevices
 
 import (
 	"io"
+	"slices"
 	"testing"
 
+	"github.com/ABConnectIO/mediadevices/pkg/codec"
 	"github.com/pion/webrtc/v4"
 )
 
@@ -61,6 +63,10 @@ func (track *mockMediaStreamTrack) NewEncodedIOReader(codecName string) (io.Read
 	return nil, nil
 }
 
+func (track *mockMediaStreamTrack) EncoderController() codec.EncoderController {
+	return nil
+}
+
 func TestMediaStreamFilters(t *testing.T) {
 	audioTracks := []Track{
 		&mockMediaStreamTrack{AudioInput},
@@ -88,13 +94,7 @@ func TestMediaStreamFilters(t *testing.T) {
 		}
 
 		for _, a := range actual {
-			found := false
-			for _, e := range expected {
-				if e == a {
-					found = true
-					break
-				}
-			}
+			found := slices.Contains(expected, a)
 
 			if !found {
 				t.Fatalf("%s: Expected to find %p in the query results", t.Name(), a)
