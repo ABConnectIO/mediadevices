@@ -144,3 +144,19 @@ func TestNoErrorOnSetBitRate(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestControlsAfterCloseDoNotTouchTheEngine(t *testing.T) {
+	enc, err := getTestVideoEncoder()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := enc.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := enc.Controller().(codec.BitRateController).SetBitRate(500000); err == nil {
+		t.Error("SetBitRate on a closed encoder must return an error")
+	}
+	if err := enc.Controller().(codec.KeyFrameController).ForceKeyFrame(); err == nil {
+		t.Error("ForceKeyFrame on a closed encoder must return an error")
+	}
+}
