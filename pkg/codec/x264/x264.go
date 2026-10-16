@@ -132,6 +132,12 @@ func (e *encoder) Read() ([]byte, func(), error) {
 //var _ codec.BitRateController = (*encoder)(nil)
 
 func (e *encoder) ForceKeyFrame() error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	if e.closed {
+		return io.EOF
+	}
 	e.engine.force_key_frame = C.int(1)
 	return nil
 }
@@ -139,6 +145,11 @@ func (e *encoder) ForceKeyFrame() error {
 func (e *encoder) SetBitRate(bitrate int) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
+	// Close frees the engine, so touching it afterwards is a use-after-free.
+	if e.closed {
+		return io.EOF
+	}
 	errNum := C.apply_target_bitrate(e.engine, C.int(bitrate))
 	if err := errFromC(errNum); err != nil {
 		return err
